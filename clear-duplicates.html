@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clear Duplicate Products</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gray-100 min-h-screen p-8">
+    <div class="max-w-4xl mx-auto">
+        <div class="bg-white p-6 rounded-lg shadow-md">
+            <h1 class="text-2xl font-bold mb-4">Product Cleanup Tool</h1>
+
+            <div class="mb-6">
+                <h2 class="text-lg font-semibold mb-2">Current Products in Storage:</h2>
+                <div id="productList" class="space-y-2 mb-4 max-h-96 overflow-y-auto"></div>
+                <p class="text-sm text-gray-600">Total: <span id="totalCount" class="font-bold">0</span> products</p>
+            </div>
+
+            <div class="flex gap-4">
+                <button onclick="removeDuplicates()" class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700">
+                    Remove Duplicates (Keep First)
+                </button>
+                <button onclick="clearAll()" class="bg-red-600 text-white px-6 py-2 rounded hover:bg-red-700">
+                    Clear All & Reset to Defaults
+                </button>
+                <button onclick="location.reload()" class="bg-gray-600 text-white px-6 py-2 rounded hover:bg-gray-700">
+                    Refresh
+                </button>
+            </div>
+
+            <div id="message" class="mt-4 p-4 rounded hidden"></div>
+        </div>
+    </div>
+
+    <script>
+        const STORAGE_KEY = "acme_products";
+        const INITIAL_PRODUCTS = [
+            {
+                name: "Bella Vita",
+                price: "Rs 300.00",
+                image: "https://cdn.shopify.com/s/files/1/0754/3727/7491/files/t-shirt-1.png?v=1689798965",
+                link: "/product/bella-vite.html"
+            },
+            {
+                name: "Acme Drawstring Bag",
+                price: "$12.00",
+                image: "https://cdn.shopify.com/s/files/1/0754/3727/7491/files/bag-1-dark.png?v=1689796304",
+                link: "/product/acme-drawstring-bag"
+            },
+            {
+                name: "Acme Cup",
+                price: "$15.00",
+                image: "https://cdn.shopify.com/s/files/1/0754/3727/7491/files/cup-black.png?v=1690003088",
+                link: "/product/acme-cup"
+            }
+        ];
+
+        function displayProducts() {
+            const products = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+            const list = document.getElementById('productList');
+            const totalCount = document.getElementById('totalCount');
+
+            list.innerHTML = '';
+            totalCount.textContent = products.length;
+
+            products.forEach((prod, index) => {
+                const div = document.createElement('div');
+                div.className = 'p-3 border rounded bg-gray-50';
+                div.innerHTML = `
+                    <div class="flex items-center gap-3">
+                        <span class="font-mono text-xs text-gray-500">#${index + 1}</span>
+                        <img src="${prod.image}" alt="${prod.name}" class="w-10 h-10 object-contain border rounded">
+                        <div class="flex-1">
+                            <p class="font-semibold">${prod.name}</p>
+                            <p class="text-sm text-gray-600">${prod.price} - ${prod.link || 'No link'}</p>
+                        </div>
+                    </div>
+                `;
+                list.appendChild(div);
+            });
+        }
+
+        function removeDuplicates() {
+            const products = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+            const seen = new Map();
+            const unique = [];
+
+            products.forEach(prod => {
+                const key = `${prod.name}-${prod.price}`;
+                if (!seen.has(key)) {
+                    seen.set(key, true);
+                    unique.push(prod);
+                }
+            });
+
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(unique));
+            showMessage(`Removed ${products.length - unique.length} duplicate(s). Now ${unique.length} unique products.`, 'success');
+            displayProducts();
+        }
+
+        function clearAll() {
+            if (confirm('This will delete all products and reset to defaults. Continue?')) {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(INITIAL_PRODUCTS));
+                showMessage('Reset to default products successfully!', 'success');
+                displayProducts();
+            }
+        }
+
+        function showMessage(text, type) {
+            const msg = document.getElementById('message');
+            msg.textContent = text;
+            msg.className = `mt-4 p-4 rounded ${type === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`;
+            msg.classList.remove('hidden');
+            setTimeout(() => msg.classList.add('hidden'), 3000);
+        }
+
+        // Load on page load
+        displayProducts();
+    </script>
+</body>
+
+</html>
