@@ -5,9 +5,9 @@ const ORDERS_KEY = "acme_orders";
 // Initial static products to populate if storage is empty
 const INITIAL_PRODUCTS = [
     {
-        name: "Bella Vita",
+        name: "Bella Vita Luxury DATE Woman + GLAM Woman Perfume",
         price: "Rs 300.00",
-        image: "https://cdn.shopify.com/s/files/1/0754/3727/7491/files/t-shirt-1.png?v=1689798965",
+        image: "./img/Bella-vita.png",
         link: "/product/bella-vite.html"
     },
     {
@@ -276,24 +276,36 @@ function editProduct(index) {
     const products = getProducts();
     const prod = products[index];
 
-    const newName = prompt("Enter new name:", prod.name);
-    if (newName === null) return;
+    document.getElementById('editProdIndex').value = index;
+    document.getElementById('editProdName').value = prod.name;
+    document.getElementById('editProdPrice').value = prod.price;
+    document.getElementById('editProdImage').value = prod.image;
+    document.getElementById('editProdLink').value = prod.link || "";
 
-    const newPrice = prompt("Enter new price:", prod.price);
-    if (newPrice === null) return;
+    document.getElementById('editProductModal').classList.remove('hidden');
+}
 
-    const newImage = prompt("Enter new image URL:", prod.image);
-    if (newImage === null) return;
+function closeEditModal() {
+    document.getElementById('editProductModal').classList.add('hidden');
+}
 
-    const newLink = prompt("Enter new product link:", prod.link || "");
-    if (newLink === null) return;
+// Edit Product Form Submission
+const editForm = document.getElementById('editProductForm');
+if (editForm) {
+    editForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const index = parseInt(document.getElementById('editProdIndex').value, 10);
+        const products = getProducts();
 
-    // Update the product at the specific index
-    products[index] = {
-        name: newName,
-        price: newPrice,
-        image: newImage,
-        link: newLink
-    };
-    saveProducts(products);
+        if (products[index]) {
+            products[index] = {
+                name: document.getElementById('editProdName').value,
+                price: document.getElementById('editProdPrice').value,
+                image: document.getElementById('editProdImage').value,
+                link: document.getElementById('editProdLink').value
+            };
+            saveProducts(products);
+            closeEditModal();
+        }
+    });
 }
